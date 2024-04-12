@@ -21,8 +21,6 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { addNote, updateNote } from "../redux/noteSlice";
 import { addTags, updateTags } from "../redux/tagSlice";
-// import { getDatabase, ref, set } from "firebase/database";
-// import firebaseApp from "../Firebase";
 
 const NoteView = () => {
     const dispatch = useDispatch();
@@ -117,9 +115,7 @@ const NoteView = () => {
             }else{
                 alert("Data not be stored");
             }
-            // const db = getDatabase(firebaseApp);
-            // const noteRef = ref(db, `notes/${noteId || uuid4()}`);
-            // console.log(noteRef)
+            
             const note = {
                 title,
                 content,
@@ -127,7 +123,7 @@ const NoteView = () => {
                 
                 updated: new Date().toISOString(),
             };
-            // await set(noteRef, note);
+            
 
             if (noteId) {
                 note.id = noteId;
@@ -153,7 +149,7 @@ const NoteView = () => {
         }
     };
 
-    // #region Tags Handlers.
+    
     function handleKeyDown(e) {
         if (e.key !== "Enter") return;
 
@@ -172,7 +168,7 @@ const NoteView = () => {
         setTags(tags.filter((el, i) => i !== index));
     }
 
-    // #endregion
+  
 
     return (
         <>
