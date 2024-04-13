@@ -3,6 +3,7 @@ import { appConfig } from "../configs/appConfig";
 
 import { noteReducer } from "./noteSlice";
 import { tagReducer } from "./tagSlice";
+import { toggleReducer } from "./toggleSlice";
 
 const saveToLocalStorage = (state) => {
     try {
@@ -31,6 +32,7 @@ const store = configureStore({
     reducer: {
         notes: noteReducer,
         tags: tagReducer,
+        bool:toggleReducer
     },
     preloadedState: persistedStore,
 });

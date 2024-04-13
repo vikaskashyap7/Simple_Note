@@ -12,7 +12,7 @@ import {
 } from "reactstrap";
 
 import { MdDelete } from "react-icons/md";
-import { X } from "react-feather";
+
 import validator from "validator";
 import { toast } from "react-toastify";
 import { v4 as uuid4 } from "uuid";
@@ -21,12 +21,13 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { addNote, updateNote } from "../redux/noteSlice";
 import { addTags, updateTags } from "../redux/tagSlice";
-
+import { toggleNoteSaved } from "../redux/toggleSlice";
 const NoteView = () => {
     const dispatch = useDispatch();
     const params = useParams();
     const navigator = useNavigate();
     const notes = useSelector((state) => state.notes);
+    // console.log(notes)
 
     const [noteId, setNoteId] = useState();
     const [title, setTitle] = useState("");
@@ -36,8 +37,8 @@ const NoteView = () => {
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [pageTitle, setPageTitle] = useState("Add new");
-    console.log(tags)
-
+    // console.log(tags)
+    
     // runs once
     useEffect(() => {
         const id = params.noteId;
@@ -87,17 +88,23 @@ const NoteView = () => {
         e.preventDefault();
 
         setSubmitted(true);
-
         if (validator.isEmpty(title)) {
             toast.error("Note Title is required");
             return;
         }
 
         setLoading(true);
-        
+        const Id=uuid4();
 
         try {
             // adding firebase
+            const note = {
+                title,
+                content,
+                tags,
+                updated: new Date().toISOString(),
+            };
+            
             const res = await fetch("https://simplenote-5703a-default-rtdb.firebaseio.com/sampleNote.json",{
                 method:"POST",
                 headers:{
@@ -106,32 +113,25 @@ const NoteView = () => {
                 body:JSON.stringify({
                     title,
                     content,
-                    tags
+                    tags,
+                    noteId:Id
                 }),
             });
-            console.log(res);
             if(res){
                 alert("Data Stored");
             }else{
                 alert("Data not be stored");
             }
-            
-            const note = {
-                title,
-                content,
-                tags,
-                
-                updated: new Date().toISOString(),
-            };
-            
+            dispatch(toggleNoteSaved());
 
             if (noteId) {
                 note.id = noteId;
+                console.log("note",note.id);
 
                 dispatch(updateNote(note));
                 dispatch(updateTags({ tags, oldTags, notes, noteId }));
             } else {
-                note.id = uuid4();
+                note.id = Id;
                 note.created = new Date().toISOString();
 
                 dispatch(addNote(note));
@@ -147,6 +147,7 @@ const NoteView = () => {
         } finally {
             setLoading(false);
         }
+        navigator(`/notes/add`);
     };
 
     
@@ -159,7 +160,7 @@ const NoteView = () => {
 
         // only add if tag is not there already
         if (!tags.includes(value)) setTags([...tags, value]);
-        console.log(tags)
+        // console.log(tags)
 
         e.target.value = "";
     }
