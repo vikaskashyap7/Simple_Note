@@ -96,14 +96,32 @@ const Sidebar = () => {
             </ul></div>
             {showConfirmation && (
                 <div className="Modal">
-                    <p className="modal-text">Do you want to delete this {} ?</p>
-                    <div className="modal-button">
-                      <button onClick={confirmDelete} className="btn-1">Yes</button>
-                      <button onClick={cancelDelete} className="btn-2">No</button>
+                <div className="modal-dialog  w-50">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={cancelDelete}></button>
                     </div>
+                    <div className="modal-body">
+                      Do you want to delete this ?
+                    </div>
+                    <div className="modal-footer">
+                    <button type="button" className="btn btn-primary"  onClick={confirmDelete}>Yes</button>
+                      <button type="button" className="btn btn-secondary"  onClick={cancelDelete}>Close</button>
+                      
+                    </div>
+                  </div>
                 </div>
+               </div>
             )}
         </nav>
+        // <div className="Modal">
+                //     <p className="modal-text">Do you want to delete this {} ?</p>
+                //     <div className="modal-button">
+                //       <button onClick={confirmDelete} className="btn-1">Yes</button>
+                //       <button onClick={cancelDelete} className="btn-2">No</button>
+                //     </div>
+                // </div>
     );
 };
 

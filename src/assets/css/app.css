@@ -95,16 +95,16 @@ body {
 
 .Modal{
   position: fixed;
-  top: 0;
   left: 0;
   right: 0;
+  top: 0;
   bottom: 0;
-  border: 1px solid black;
-  background-color: rgba(249, 246, 246, 0.9);
+
+  background-color: rgba(22, 21, 21, 0.6);
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
+  
 }
 .modal-text{
   font-family:sans-serif;
