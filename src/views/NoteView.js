@@ -94,11 +94,11 @@ const NoteView = () => {
         }
 
         setLoading(true);
-        const Id=uuid4();
+        let Id=uuid4();
 
         try {
             // adding firebase
-            const note = {
+            var note = {
                 title,
                 content,
                 tags,
@@ -117,17 +117,15 @@ const NoteView = () => {
                     noteId:Id
                 }),
             });
-            if(res){
-                alert("Data Stored");
-            }else{
-                alert("Data not be stored");
-            }
+            // if(res){
+            //     alert("Data Stored");
+            // }else{
+            //     alert("Data not be stored");
+            // }
             dispatch(toggleNoteSaved());
 
             if (noteId) {
                 note.id = noteId;
-                console.log("note",note.id);
-
                 dispatch(updateNote(note));
                 dispatch(updateTags({ tags, oldTags, notes, noteId }));
             } else {
@@ -137,7 +135,7 @@ const NoteView = () => {
                 dispatch(addNote(note));
                 dispatch(addTags(note.tags));
 
-                navigator(`/notes/edit/${note.id}`);
+                navigator(`/notes/edit/${Id}`);
             }
 
             toast.success(`Note add/updated successfully`);
@@ -172,11 +170,11 @@ const NoteView = () => {
   
 
     return (
-        <>
-            <div className="mt-3">
+       
+            <div className="mt-3 noteView">
                 <Card>
                     <CardBody>
-                        <CardSubtitle className="mb3 text-muted">
+                        <CardSubtitle className="mb3 ">
                             {pageTitle} note
                         </CardSubtitle>
 
@@ -188,6 +186,7 @@ const NoteView = () => {
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 invalid={!title && submitted}
+                               className="input-1"
                             />
                             <Label for="NoteTitle">Title</Label>
                         </FormGroup>
@@ -235,7 +234,7 @@ const NoteView = () => {
                     </CardFooter>
                 </Card>
             </div>
-        </>
+        
     );
 };
 

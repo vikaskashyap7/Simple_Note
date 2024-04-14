@@ -11,6 +11,8 @@ const Sidebar = () => {
     const [data,setData]=useState([]);
     const [loading, setLoading] = useState(false);
     const navigator = useNavigate();
+    const [showConfirmation, setShowConfirmation] = useState(false); 
+    const [noteIdToDelete, setNoteIdToDelete] = useState(null); 
   //  change here
     const getData=async()=>{
         try {
@@ -33,34 +35,50 @@ const Sidebar = () => {
       //  console.log("using useeffect")
     },[isNoteSaved])   //change here 
 
-    // change here
     const handleDelete = async (noteId) => {
-        try {
-          const response = await fetch(`https://simplenote-5703a-default-rtdb.firebaseio.com/sampleNote/${noteId}.json`, {
-            method: "DELETE"
-          });
-          
-          const updatedData = { ...data };
-          delete updatedData[noteId];
-          setData(updatedData);
-          
-          toast.success("Data Deleted");
-        } catch (error) {
-          alert("Data not be Deleted")
+      try {
+          // Show confirmation dialog
+          console.log(noteId)
+          setShowConfirmation(true);
+          setNoteIdToDelete(noteId);
+      } catch (error) {
           console.error("Error deleting note:", error);
-        }
-        navigator(`/notes/add`);
-      };
+      }
+  };
 
+  const confirmDelete = async () => {
+      try {
+          const response = await fetch(`https://simplenote-5703a-default-rtdb.firebaseio.com/sampleNote/${noteIdToDelete}.json`, {
+              method: "DELETE"
+          });
 
+          const updatedData = { ...data };
+          delete updatedData[noteIdToDelete];
+          setData(updatedData);
+
+          toast.success("Data Deleted");
+      } catch (error) {
+          alert("Data could not be deleted");
+          console.error("Error deleting note:", error);
+      }
+
+      // Reset confirmation state and navigate
+      setShowConfirmation(false);
+      setNoteIdToDelete(null);
+      navigator(`/notes/add`);
+  };
+
+      const cancelDelete = () => {
+        // Reset confirmation state
+        setShowConfirmation(false);
+        setNoteIdToDelete(null);
+    };
 
     return (
         <nav className="col-md-3 col-lg-2 bg-light sidebar">
             <div>
             <ul className="nav flex-column">
-            { loading ? (
-                        <div className="spinner">Loading...</div>
-                    ) :(data &&  
+            {data &&  
             Object.keys(data).map((key) => {
               const note = data[key];
               return (
@@ -74,8 +92,17 @@ const Sidebar = () => {
                   </div>
                 </li>
               );
-            }))}
+            })}
             </ul></div>
+            {showConfirmation && (
+                <div className="Modal">
+                    <p className="modal-text">Do you want to delete this {} ?</p>
+                    <div className="modal-button">
+                      <button onClick={confirmDelete} className="btn-1">Yes</button>
+                      <button onClick={cancelDelete} className="btn-2">No</button>
+                    </div>
+                </div>
+            )}
         </nav>
     );
 };
