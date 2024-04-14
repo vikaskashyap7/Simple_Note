@@ -94,7 +94,7 @@ const NoteView = () => {
         }
 
         setLoading(true);
-        let Id=uuid4();
+        const Id=uuid4();
 
         try {
             // adding firebase
