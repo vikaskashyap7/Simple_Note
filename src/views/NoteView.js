@@ -9,19 +9,23 @@ import {
     CardFooter,
     Spinner,
     Button,
+    Row,
 } from "reactstrap";
 
 import { MdDelete } from "react-icons/md";
+import { getAuth } from 'firebase/auth';
 
 import validator from "validator";
 import { toast } from "react-toastify";
 import { v4 as uuid4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Outlet } from "react-router-dom";
 
 import { addNote, updateNote } from "../redux/noteSlice";
 import { addTags, updateTags } from "../redux/tagSlice";
 import { toggleNoteSaved } from "../redux/toggleSlice";
+import Header from "../components/navs/Header";
+import Sidebar from "../components/navs/Sidebar";
 const NoteView = () => {
     const dispatch = useDispatch();
     const params = useParams();
@@ -50,7 +54,7 @@ const NoteView = () => {
         } else {
             resetView();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        
     }, [params]);
 
     const resetView = () => {
@@ -86,7 +90,10 @@ const NoteView = () => {
 
     const onFormSubmit = async(e) => {
         e.preventDefault();
+        const auth = getAuth();
+        const user = auth.currentUser;
 
+        console.log(user)
         setSubmitted(true);
         if (validator.isEmpty(title)) {
             toast.error("Note Title is required");
@@ -98,14 +105,17 @@ const NoteView = () => {
 
         try {
             // adding firebase
-            var note = {
-                title,
-                content,
-                tags,
-                updated: new Date().toISOString(),
-            };
-            
-            const res = await fetch("https://simplenote-5703a-default-rtdb.firebaseio.com/sampleNote.json",{
+            if(user){
+                const userId = user.uid;
+                // console.log("In post",userId)
+                var note = {
+                    title,
+                    content,
+                    tags,
+                    updated: new Date().toISOString(),
+                };
+                
+                const res = await fetch(`https://simplenote-5703a-default-rtdb.firebaseio.com/users/${userId}/notes.json`,{
                 method:"POST",
                 headers:{
                     "Content-Type":"application/json",
@@ -117,12 +127,8 @@ const NoteView = () => {
                     noteId:Id
                 }),
             });
-            // if(res){
-            //     alert("Data Stored");
-            // }else{
-            //     alert("Data not be stored");
-            // }
-            dispatch(toggleNoteSaved());
+            
+            dispatch(toggleNoteSaved()); 
 
             if (noteId) {
                 note.id = noteId;
@@ -137,6 +143,7 @@ const NoteView = () => {
 
                 navigator(`/notes/edit/${Id}`);
             }
+        }
 
             toast.success(`Note add/updated successfully`);
         } catch (err) {
@@ -170,8 +177,21 @@ const NoteView = () => {
   
 
     return (
+       <>
        
-            <div className="mt-3 noteView">
+       <Header appName="Simple Notes" homePage="/" logoutLink="" />
+                    
+       
+       <div className="noteWrapper">
+                 <div >           
+                        <Row>
+                            <Sidebar />
+                            <main className="col-md-9 ms-sm-auto col-lg-10 px-md-5">
+                                <Outlet />
+                            </main>
+                        </Row>
+                 </div>
+         <div className="mt-3 noteView">
                 <Card>
                     <CardBody>
                         <CardSubtitle className="mb3 ">
@@ -234,6 +254,9 @@ const NoteView = () => {
                     </CardFooter>
                 </Card>
             </div>
+            </div>
+       </>
+            
         
     );
 };

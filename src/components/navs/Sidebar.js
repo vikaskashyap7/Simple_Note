@@ -4,29 +4,34 @@ import { FileText } from "react-feather";
 import { MdDelete } from "react-icons/md";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { getAuth } from 'firebase/auth';
 
 const Sidebar = () => {
     const isNoteSaved = useSelector((state) => state.bool.isNoteSaved);
     // console.log("isNoteSaved",isNoteSaved)
     const [data,setData]=useState([]);
-    const [loading, setLoading] = useState(false);
     const navigator = useNavigate();
     const [showConfirmation, setShowConfirmation] = useState(false); 
     const [noteIdToDelete, setNoteIdToDelete] = useState(null); 
   //  change here
     const getData=async()=>{
+       const auth = getAuth();
+        const user = auth.currentUser;
         try {
-            setLoading(true);
-          const response = await fetch("https://simplenote-5703a-default-rtdb.firebaseio.com/sampleNote.json");
-          const output = await response.json();
-          if (output) {
-            setData(output);
-            // console.log("out",output);
-          }
+          if (user) {
+            const userId = user.uid;
+            console.log("In fetch",userId)
+            const response = await fetch(`https://simplenote-5703a-default-rtdb.firebaseio.com/users/${userId}/notes.json`);
+            const output = await response.json();
+            
+            if (output) {
+                setData(output);
+            }
+         }
         } catch (error) {
           console.error("Error fetching data:", error);
         }
-        setLoading(false);
+        
     }
     // change here
     useEffect(()=>{
@@ -47,16 +52,23 @@ const Sidebar = () => {
   };
 
   const confirmDelete = async () => {
+        const auth = getAuth();
+        const user = auth.currentUser;
       try {
-          const response = await fetch(`https://simplenote-5703a-default-rtdb.firebaseio.com/sampleNote/${noteIdToDelete}.json`, {
-              method: "DELETE"
-          });
+          if (user) {
+            const userId = user.uid;
+            console.log("In delete",userId)
 
-          const updatedData = { ...data };
-          delete updatedData[noteIdToDelete];
-          setData(updatedData);
+            const response = await fetch(`https://simplenote-5703a-default-rtdb.firebaseio.com/users/${userId}/notes/${noteIdToDelete}.json`, {
+                method: "DELETE"
+            });
 
-          toast.success("Data Deleted");
+            const updatedData = { ...data };
+            delete updatedData[noteIdToDelete];
+            setData(updatedData);
+
+            toast.success("Data Deleted");
+        }
       } catch (error) {
           alert("Data could not be deleted");
           console.error("Error deleting note:", error);
@@ -100,14 +112,14 @@ const Sidebar = () => {
                   <div className="modal-content">
                     <div className="modal-header">
                       
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={cancelDelete}></button>
+                      <button typeof="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={cancelDelete}></button>
                     </div>
                     <div className="modal-body">
                       Do you want to delete this ?
                     </div>
                     <div className="modal-footer">
-                    <button type="button" className="btn btn-primary"  onClick={confirmDelete}>Yes</button>
-                      <button type="button" className="btn btn-secondary"  onClick={cancelDelete}>Close</button>
+                    <button typeof="button" className="btn btn-primary"  onClick={confirmDelete}>Confirm</button>
+                      <button typeof="button" className="btn btn-secondary"  onClick={cancelDelete}>Close</button>
                       
                     </div>
                   </div>
@@ -115,13 +127,7 @@ const Sidebar = () => {
                </div>
             )}
         </nav>
-        // <div className="Modal">
-                //     <p className="modal-text">Do you want to delete this {} ?</p>
-                //     <div className="modal-button">
-                //       <button onClick={confirmDelete} className="btn-1">Yes</button>
-                //       <button onClick={cancelDelete} className="btn-2">No</button>
-                //     </div>
-                // </div>
+       
     );
 };
 

@@ -8,6 +8,7 @@ import {
     NavbarToggler,
     NavItem,
 } from "reactstrap";
+import SignOut from "../../views/Logout";
 
 const Header = ({ appName, homePage, logoutLink }) => {
     return (
@@ -28,7 +29,10 @@ const Header = ({ appName, homePage, logoutLink }) => {
                             </Link>
                         </NavItem>
                     </Nav>
+                    
                 </Collapse>
+                <SignOut/>
+               
             </Navbar>
         </>
     );
