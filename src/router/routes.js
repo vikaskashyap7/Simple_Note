@@ -1,13 +1,12 @@
 import { lazy } from "react";
 
 import AppLayout from "../layouts/AppLayout";
-import { element } from "prop-types";
+
 
 const Home = lazy(() => import("../views/HomeView"));
 const Note = lazy(() => import("../views/NoteView"));
 const Tags = lazy(() => import("../views/TagsView"));
-const Login = lazy(()=>import("../views/Login"));
-// const SignUp=lazy(()=>import("../views/SingnUp"));
+
 
 const Routes = [
     {
@@ -15,8 +14,6 @@ const Routes = [
         element: <AppLayout />,
         children: [
             { index: true, element: <Home /> },
-            { path: '/login', element: <Login /> },
-            // { path: '/signup', element: <SignUp /> },
             {
                 path: "/notes",
                 children: [

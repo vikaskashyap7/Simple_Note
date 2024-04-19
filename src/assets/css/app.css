@@ -163,10 +163,13 @@ body {
 .form-control{
    width: 75vw;
 }
+
 .homeView{
   margin-left: 20%;
 }
-/* .noteWrapper{
-  
-
-} */
+ 
+@media screen and (min-width: 1024px) {
+   .Input-1{
+    width: 25vw;
+   }
+}
