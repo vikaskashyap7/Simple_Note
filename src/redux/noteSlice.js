@@ -8,7 +8,7 @@ export const noteSlice = createSlice({
             state.push(action.payload);
         },
         updateNote: (state, action) => {
-            const { id, title, tags, content, updated } = action.payload;
+            const { id, title, tags, content,url, updated } = action.payload;
 
             const oNote = state.find((x) => x.id === id);
 
@@ -16,6 +16,7 @@ export const noteSlice = createSlice({
             oNote.title = title;
             oNote.tags = tags;
             oNote.content = content;
+            oNote.url=url
         },
     },
 });

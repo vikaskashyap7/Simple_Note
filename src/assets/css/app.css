@@ -161,11 +161,19 @@ body {
   
 }
 .form-control{
-   width: 75vw;
+   width: 67vw;
 }
 
 .homeView{
   margin-left: 20%;
+}
+.file-attachment{
+  
+  margin-top: 6px;
+}
+.note-file{
+  display: flex;
+  gap: 20px;
 }
  
 @media screen and (min-width: 1024px) {

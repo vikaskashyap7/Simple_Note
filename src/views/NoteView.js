@@ -26,6 +26,7 @@ import { addTags, updateTags } from "../redux/tagSlice";
 import { toggleNoteSaved } from "../redux/toggleSlice";
 import Header from "../components/navs/Header";
 import Sidebar from "../components/navs/Sidebar";
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 const NoteView = () => {
     const dispatch = useDispatch();
     const params = useParams();
@@ -35,6 +36,8 @@ const NoteView = () => {
 
     const [noteId, setNoteId] = useState();
     const [title, setTitle] = useState("");
+    const [file, setFile] = useState(null);
+const [fileUrl, setFileUrl] = useState(null);
     const [content, setContent] = useState("");
     const [tags, setTags] = useState([]);
     const [oldTags, setOldTags] = useState([]);
@@ -88,72 +91,163 @@ const NoteView = () => {
         }
     };
 
-    const onFormSubmit = async(e) => {
-        e.preventDefault();
-        const auth = getAuth();
-        const user = auth.currentUser;
 
-        console.log(user)
-        setSubmitted(true);
-        if (validator.isEmpty(title)) {
-            toast.error("Note Title is required");
-            return;
-        }
-
-        setLoading(true);
-        const Id=uuid4();
-
-        try {
-            // adding firebase
-            if(user){
-                const userId = user.uid;
-                // console.log("In post",userId)
-                var note = {
-                    title,
-                    content,
-                    tags,
-                    updated: new Date().toISOString(),
-                };
-                
-                const res = await fetch(`https://simplenote-5703a-default-rtdb.firebaseio.com/users/${userId}/notes.json`,{
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json",
-                },
-                body:JSON.stringify({
-                    title,
-                    content,
-                    tags,
-                    noteId:Id
-                }),
-            });
-            
-            dispatch(toggleNoteSaved()); 
-
-            if (noteId) {
-                note.id = noteId;
-                dispatch(updateNote(note));
-                dispatch(updateTags({ tags, oldTags, notes, noteId }));
-            } else {
-                note.id = Id;
-                note.created = new Date().toISOString();
-
-                dispatch(addNote(note));
-                dispatch(addTags(note.tags));
-
-                navigator(`/notes/edit/${Id}`);
+    const onFormSubmit = async (e) => {
+        
+            e.preventDefault();
+            const auth = getAuth();
+            const user = auth.currentUser;
+        
+            setSubmitted(true);
+            if (validator.isEmpty(title)) {
+                toast.error("Note Title is required");
+                return;
             }
-        }
-
-            toast.success(`Note add/updated successfully`);
-        } catch (err) {
-            console.log(err);
-            toast.error(err.message);
-        } finally {
+        
+            setLoading(true);
+            const Id = uuid4();
+        
+            try {
+                if (user) {
+                    const userId = user.uid;
+                    const storage = getStorage();
+                    const storageRef = ref(storage, `users/${userId}/images/${file.name}`);
+        
+                    // Check if file is selected
+                    if (file) {
+                        const uploadTask = uploadBytesResumable(storageRef, file);
+        
+                        // Listen for upload completion
+                        uploadTask.on(
+                            'state_changed',
+                            (snapshot) => {
+                                // Handle upload progress if needed
+                            },
+                            (error) => {
+                                console.error('Error uploading file:', error);
+                                toast.error('Failed to upload file');
+                                setLoading(false);
+                            },
+                            async () => {
+                                // Upload completed successfully, get download URL
+                                try {
+                                    const downloadURL = await getDownloadURL(storageRef);
+                                    console.log('Download URL:', downloadURL);
+        
+                                    // Update state with the file URL
+                                    setFileUrl(downloadURL);
+        
+                                    // Continue with saving the note to Realtime Database
+                                    const note = {
+                                        title,
+                                        content,
+                                        tags,
+                                        fileUrl: downloadURL, // Include file URL in the note data
+                                        updated: new Date().toISOString(),
+                                    };
+        
+                                    // Save the note to Firebase Realtime Database
+                                    const res = await fetch(`https://simplenote-5703a-default-rtdb.firebaseio.com/users/${userId}/notes.json`, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                            ...note,
+                                            noteId: Id,
+                                        }),
+                                    });
+        
+                                    dispatch(toggleNoteSaved());
+        
+                                    if (noteId) {
+                                        note.id = noteId;
+                                        dispatch(updateNote(note));
+                                        dispatch(updateTags({ tags, oldTags, notes, noteId }));
+                                    } else {
+                                        note.id = Id;
+        
+        
+                                        dispatch(addNote(note));
+                                        dispatch(addTags(note.tags));
+        
+                                        // Reset file input after successful submission
+                                        setFile(null); // Clear the file state
+                                        const fileInput = document.getElementById('fileInput');
+                                        if (fileInput) {
+                                            fileInput.value = null; // Reset the file input value
+                                        }
+        
+                                        navigator(`/notes/add`);
+                                    }
+        
+                                    toast.success('Note saved successfully');
+                                } catch (error) {
+                                    console.error('Error getting download URL:', error);
+                                    toast.error('Failed to get file download URL');
+                                }
+        
+                            }
+                        );
+                    } else {
+                        // No file selected, save/update the note without file URL
+                        const note = {
+                            title,
+                            content,
+                            tags,
+                            updated: new Date().toISOString(),
+                        };
+        
+                        // Save the note to Firebase Realtime Database
+                        const res = await fetch(`https://simplenote-5703a-default-rtdb.firebaseio.com/users/${userId}/notes.json`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                ...note,
+                                noteId: Id,
+                            }),
+                        });
+        
+                        dispatch(toggleNoteSaved());
+        
+                        if (noteId) {
+                            note.id = noteId;
+                            dispatch(updateNote(note));
+                            dispatch(updateTags({ tags, oldTags, notes, noteId }));
+                        } else {
+                            note.id = Id;
+        
+        
+                            dispatch(addNote(note));
+                            dispatch(addTags(note.tags));
+        
+                            // Reset file input after successful submission
+                            setFile(null); // Clear the file state
+                            const fileInput = document.getElementById('fileInput');
+                            if (fileInput) {
+                                fileInput.value = null; // Reset the file input value
+                            }
+        
+                            navigator(`/notes/add`);
+                        }
+        
+                        toast.success('Note saved successfully');
+                    }
+                }
+        
+            } catch (error) {
+                console.error('Error saving note:', error);
+                toast.error('Failed to save note');
+        
+            }
             setLoading(false);
-        }
-        navigator(`/notes/add`);
+            navigator(`/notes/add`);
+       
+        
     };
+    
 
     
     function handleKeyDown(e) {
@@ -222,6 +316,15 @@ const NoteView = () => {
                                 style={{ height: "300px" }}
                             />
                             <Label for="NoteContent">Note Content</Label>
+                        </FormGroup>
+                         
+                        <FormGroup>
+                            <Label for="fileInput">Upload File</Label>
+                            <Input
+                                type="file"
+                                id="fileInput"
+                                onChange={(e) => setFile(e.target.files[0])}
+                            />
                         </FormGroup>
 
                         <div className="tags-input-container ">

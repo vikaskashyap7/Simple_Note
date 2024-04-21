@@ -6,6 +6,9 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { getAuth } from 'firebase/auth';
 
+
+import { IoDocumentAttachOutline } from "react-icons/io5";
+
 const Sidebar = () => {
     const isNoteSaved = useSelector((state) => state.bool.isNoteSaved);
     // console.log("isNoteSaved",isNoteSaved)
@@ -23,6 +26,7 @@ const Sidebar = () => {
             console.log("In fetch",userId)
             const response = await fetch(`https://simplenote-5703a-default-rtdb.firebaseio.com/users/${userId}/notes.json`);
             const output = await response.json();
+            console.log(output)
             
             if (output) {
                 setData(output);
@@ -99,8 +103,11 @@ const Sidebar = () => {
                     <div  />
                     {" " + note.title}
                   </Link>
-                  <div className="nav-div" onClick={() => handleDelete(key)}>
-                    <MdDelete  className="delete"/>
+                  <div className="note-file">
+                    <a href={note.fileUrl} target="_blank" rel="noopener noreferrer"><div className="file-attachment"><IoDocumentAttachOutline /></div></a>
+                    <div className="nav-div" onClick={() => handleDelete(key)}>
+                      <MdDelete  className="delete"/>
+                    </div>
                   </div>
                 </li>
               );
