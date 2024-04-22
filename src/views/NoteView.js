@@ -97,6 +97,9 @@ const [fileUrl, setFileUrl] = useState(null);
             e.preventDefault();
             const auth = getAuth();
             const user = auth.currentUser;
+            if (!user) {
+                return; // Handle user not logged in scenario
+            }
         
             setSubmitted(true);
             if (validator.isEmpty(title)) {
@@ -170,21 +173,22 @@ const [fileUrl, setFileUrl] = useState(null);
         
                                         dispatch(addNote(note));
                                         dispatch(addTags(note.tags));
-        
+                                        
                                         // Reset file input after successful submission
                                         setFile(null); // Clear the file state
                                         const fileInput = document.getElementById('fileInput');
                                         if (fileInput) {
                                             fileInput.value = null; // Reset the file input value
                                         }
-        
+                                        setLoading(false);
                                         navigator(`/notes/add`);
                                     }
-        
                                     toast.success('Note saved successfully');
+                                    
                                 } catch (error) {
                                     console.error('Error getting download URL:', error);
                                     toast.error('Failed to get file download URL');
+                                    setLoading(false);
                                 }
         
                             }
@@ -229,7 +233,7 @@ const [fileUrl, setFileUrl] = useState(null);
                             if (fileInput) {
                                 fileInput.value = null; // Reset the file input value
                             }
-        
+                            setLoading(false);
                             navigator(`/notes/add`);
                         }
         
@@ -240,12 +244,8 @@ const [fileUrl, setFileUrl] = useState(null);
             } catch (error) {
                 console.error('Error saving note:', error);
                 toast.error('Failed to save note');
-        
-            }
-            setLoading(false);
-            navigator(`/notes/add`);
-       
-        
+                setLoading(false);
+            } 
     };
     
 
